@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fil Wallet | Finanzas Inteligentes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<nav><h1>ZenWallet.</h1></nav>
+<div class="tip-container" id="daily-tip">💡 "Tu futuro financiero se construye hoy."</div>
+
+<div class="container">
+    <div class="card" id="main-card">
+        <div class="input-group">
+            <label>💰 Ingreso Mensual</label>
+            <input type="number" id="ing" placeholder="0.00">
+        </div>
+        <div class="input-grid">
+            <div class="input-group">
+                <label>🏠 Gastos Fijos</label>
+                <input type="number" id="fix" placeholder="Renta...">
+            </div>
+            <div class="input-group">
+                <label>💳 Deudas</label>
+                <input type="number" id="deuda" placeholder="Pagos...">
+            </div>
+        </div>
+        <div class="input-grid">
+            <div class="input-group">
+                <label>🛒 Variable Semanal</label>
+                <input type="number" id="sem" placeholder="Variable">
+            </div>
+            <div class="input-group">
+                <label>☕ Hormiga Diario</label>
+                <input type="number" id="hormiga" placeholder="Diario">
+            </div>
+        </div>
+        <div class="input-group">
+            <label>🎯 Meta Principal</label>
+            <select id="meta">
+                <option value="Viaje">Viaje (✈️)</option>
+                <option value="Fondo de Emergencia">Emergencia (🛡️)</option>
+                <option value="Vivienda">Vivienda (🏠)</option>
+            </select>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-main" onclick="update()">Analizar Plan</button>
+            <button class="btn-clear" onclick="limpiar()">Reset</button>
+        </div>
+
+        <div class="chart-container" id="c-cont">
+            <div class="donut-chart" id="chart"><div class="chart-pct" id="chart-pct">0%</div></div>
+        </div>
+
+        <div id="resumen">
+            <div style="display: flex; justify-content: space-between;"><span>Disponible:</span> <b id="disp"></b></div>
+            <div class="grid-sobres">
+                <div class="sobre"><b>FIJO (50%)</b><br><span id="s-fijo"></span></div>
+                <div class="sobre" style="border-color:var(--warning)"><b>OCIO (30%)</b><br><span id="s-ocio"></span></div>
+                <div class="sobre" style="border-color:var(--success)"><b>META (20%)</b><br><span id="s-meta"></span></div>
+            </div>
+            <div class="libertad-box">
+                <h2 id="meses-lib" style="margin:0">0 Meses</h2>
+                <span style="font-size:0.6rem; text-transform:uppercase; font-weight:700">Libertad Financiera</span>
+            </div>
+            <button id="btn-descarga" onclick="generarReportePro()" style="width:100%; margin-top:20px; background:var(--primary); color:white; border:none; padding:15px; border-radius:12px; cursor:pointer; font-weight:700;">📥 DESCARGAR REPORTE PREMIUM</button>
+        </div>
+    </div>
+</div>
+
+<div id="pdf-offscreen">
+    <div id="pdf-template" style="padding: 50px; background: white; width: 650px; color: #333; font-family: Arial, sans-serif;">
+        <div style="border-bottom: 5px solid #0984e3; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="color: #0984e3; margin: 0; font-size: 28px;">REPORTE ZENWALLET PRO</h1>
+            <p id="p-fecha" style="color: #666; margin: 5px 0;"></p>
+        </div>
+
+        <div style="background: #f4f7f6; padding: 30px; border-radius: 20px; margin-bottom: 30px; border: 1px solid #eee;">
+            <h2 style="font-size: 18px; color: #0984e3; margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">RESUMEN DE CUENTAS</h2>
+            <div style="display: flex; justify-content: space-between; margin: 15px 0; font-size: 16px;"><span>Ingresos Mensuales:</span> <b id="p-ing"></b></div>
+            <div style="display: flex; justify-content: space-between; margin: 15px 0; font-size: 16px;"><span>Gastos Calculados:</span> <b id="p-gastos"></b></div>
+            <div style="display: flex; justify-content: space-between; font-size: 22px; color: #00b894; margin-top: 20px; padding-top: 10px; border-top: 2px dashed #ccc;">
+                <b>SALDO LIBRE:</b> <b id="p-dis"></b>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+            <div style="border: 1px solid #ddd; padding: 25px; border-radius: 20px;">
+                <h3 style="font-size: 14px; margin-top: 0; color: #0984e3;">REGLA 50/30/20</h3>
+                <p style="margin: 8px 0;">Fijos (50%): <b id="p-s1"></b></p>
+                <p style="margin: 8px 0;">Ocio (30%): <b id="p-s2"></b></p>
+                <p style="margin: 8px 0;">Ahorro (20%): <b id="p-s3"></b></p>
+            </div>
+            <div style="background: #0984e3; color: white; padding: 25px; border-radius: 20px; text-align: center;">
+                <p style="margin: 0; font-size: 12px; font-weight: bold; text-transform: uppercase;">Libertad Financiera</p>
+                <h1 id="p-lib" style="margin: 15px 0; font-size: 35px;">0 Meses</h1>
+                <p style="font-size: 11px; opacity: 0.8;">Meses de respaldo garantizados</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center; color: #bbb; font-size: 12px;">
+            Este reporte fue generado automáticamente por ZenWallet Pro.
+        </div>
+    </div>
+</div>
+
+<script>
+    function update() {
+        const i = parseFloat(document.getElementById('ing').value) || 0;
+        const f = parseFloat(document.getElementById('fix').value) || 0;
+        const d = parseFloat(document.getElementById('deuda').value) || 0;
+        const s = parseFloat(document.getElementById('sem').value) || 0;
+        const h = parseFloat(document.getElementById('hormiga').value) || 0;
+
+        const totalG = f + d + (s * 4) + (h * 30);
+        const diff = i - totalG;
+        const porc = i > 0 ? Math.min((totalG / i) * 100, 100) : 0;
+
+        document.getElementById('c-cont').style.display = "flex";
+        document.getElementById('resumen').style.display = "block";
+
+        const color = porc > 90 ? '#d63031' : (porc > 75 ? '#fdcb6e' : '#00b894');
+        document.getElementById('chart').style.background = `conic-gradient(${color} ${porc}%, var(--gray) ${porc}%)`;
+        document.getElementById('chart-pct').innerText = Math.round(porc) + "%";
+        document.getElementById('chart-pct').style.color = color;
+
+        document.getElementById('disp').innerText = "$" + diff.toLocaleString();
+        document.getElementById('s-fijo').innerText = "$" + (i * 0.5).toLocaleString();
+        document.getElementById('s-ocio').innerText = "$" + (i * 0.3).toLocaleString();
+        document.getElementById('s-meta').innerText = "$" + (i * 0.2).toLocaleString();
+
+        const meses = totalG > 0 ? (diff > 0 ? (diff / totalG).toFixed(1) : 0) : 0;
+        document.getElementById('meses-lib').innerText = `${meses} Meses`;
+    }
+
+    async function generarReportePro() {
+        const btn = document.getElementById('btn-descarga');
+        btn.innerText = "⏳ Generando...";
+        btn.disabled = true;
+
+        // Limpiar textos de seguridad para el PDF
+        const limpiarNaN = (texto) => texto.includes("NaN") ? "$0" : texto;
+
+        // Llenar datos en la plantilla invisible
+        document.getElementById('p-fecha').innerText = "Generado el: " + new Date().toLocaleDateString();
+        document.getElementById('p-ing').innerText = "$" + (parseFloat(document.getElementById('ing').value) || 0).toLocaleString();
+        
+        const gTotal = (parseFloat(document.getElementById('fix').value) || 0) + 
+                       (parseFloat(document.getElementById('deuda').value) || 0) + 
+                       (parseFloat(document.getElementById('sem').value) * 4) + 
+                       (parseFloat(document.getElementById('hormiga').value) * 30);
+        
+        document.getElementById('p-gastos').innerText = "$" + gTotal.toLocaleString();
+        document.getElementById('p-dis').innerText = limpiarNaN(document.getElementById('disp').innerText);
+        document.getElementById('p-lib').innerText = limpiarNaN(document.getElementById('meses-lib').innerText);
+        document.getElementById('p-s1').innerText = limpiarNaN(document.getElementById('s-fijo').innerText);
+        document.getElementById('p-s2').innerText = limpiarNaN(document.getElementById('s-ocio').innerText);
+        document.getElementById('p-s3').innerText = limpiarNaN(document.getElementById('s-meta').innerText);
+
+        const element = document.getElementById('pdf-template');
+        
+        const opt = {
+            margin: [30, 30],
+            filename: 'Mi_Plan_ZenWallet.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                letterRendering: true,
+                width: 1100 // Forzamos que lea el ancho completo de la plantilla
+            },
+           jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        try {
+            await html2pdf().set(opt).from(element).save();
+        } catch (e) {
+            console.error(e);
+            alert("Error al crear el PDF. Intenta de nuevo.");
+        } finally {
+            btn.innerText = "📥 DESCARGAR REPORTE PREMIUM";
+            btn.disabled = false;
+        }
+    }
+
+    function limpiar() { if(confirm("¿Seguro que quieres borrar todo?")) location.reload(); }
+</script>
+</body>
+</html>
